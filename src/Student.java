@@ -22,15 +22,15 @@ public class Student {
     String sql = "INSERT INTO students (reg_number, name, level, session, semester) VALUES (?, ?, ?, ?, ?)";
 
     // ✅ Try to get a connection from sqlconnector
+    try{
     Connection conn = sqlconnector.connect();
 
     // ⚠️ Check if the connection failed
-    if (conn == null) {
-        System.out.println("❌ Database connection is NULL. Could not save student.");
-        return; // stop execution here
-    }
+    if (conn != null) {
+        //System.out.println("❌ Database connection is NULL. Could not save student.");
+        
 
-    try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        PreparedStatement stmt = conn.prepareStatement(sql);
         // ✅ Assign field values to query
         stmt.setString(1, reg_number);
         stmt.setString(2, name);
@@ -40,7 +40,7 @@ public class Student {
 
         stmt.executeUpdate();
         System.out.println("✅ Student record saved successfully!");
-    } catch (SQLException e) {
+    } } catch (SQLException e) {
         System.out.println("❌ Error saving student: " + e.getMessage());
     }
 }

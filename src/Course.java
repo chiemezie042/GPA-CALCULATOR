@@ -1,5 +1,6 @@
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 public class Course {
 
@@ -57,7 +58,10 @@ public class Course {
     // ✅ Save course record to database
     public void saveToDatabase() throws Exception {
         // Connect to DB using your sqlconnector or DatabaseConnection class
+        try{
         Connection conn = sqlconnector.connect(); // adjust if your connector class name differs
+
+                if(conn!= null){
 
         // ✅ SQL insert query (matches your table columns)
         String sql = "INSERT INTO result (reg_number, course_code, course_title, credit, grade, level, semester, gpa) "
@@ -78,6 +82,9 @@ public class Course {
         conn.close();
 
         System.out.println("✅ Course saved to database successfully!");
+    }}catch (SQLException e) {
+        e.getMessage();
+    }
     }
 
     // ✅ Getters

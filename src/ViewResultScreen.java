@@ -12,7 +12,7 @@ import java.sql.*;
 
 public class ViewResultScreen {
 
-     Stage stage;
+    Stage stage;
 
     // ✅ Constructor with Stage
     public ViewResultScreen(Stage stage) {
@@ -61,68 +61,66 @@ public class ViewResultScreen {
         return layout;
     }
 
-   private void fetchResults(String regNo, TextArea output) {
-    String sql = "SELECT course_code, course_title, credit, grade, gpa, level, semester "
-            + "FROM result WHERE reg_number = ? ORDER BY level, semester";
+    private void fetchResults(String regNo, TextArea output) {
+        String sql = "SELECT course_code, course_title, credit, grade, gpa, level, semester "
+                + "FROM result WHERE reg_number = ? ORDER BY level, semester";
 
-    try 
-        //(Connection conn = sqlconnector.connect(); PreparedStatement stmt = conn.prepareStatement(sql)) 
-    {
-        
-        Connection conn = sqlconnector.connect(); 
-        if(conn!= null){
-        PreparedStatement stmt = conn.prepareStatement(sql);
-        stmt.setString(1, regNo);
-        
-        ResultSet rs = stmt.executeQuery();
+        try //(Connection conn = sqlconnector.connect(); PreparedStatement stmt = conn.prepareStatement(sql)) 
+        {
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("╔══════════════════════════════════════════════════════════════════════╗\n");
-        sb.append(String.format("║   🎓  GPA RESULTS for: %-45s ║\n", regNo));
-        sb.append("╠══════════════════════════════════════════════════════════════════════╣\n");
-        sb.append(String.format("║ %-8s │ %-25s │ %-6s │ %-6s │ %-4s │ %-6s │ %-8s ║%n",
-                "Code", "Title", "Credit", "Grade", "GPA", "Level", "Semester"));
-        sb.append("╠══════════════════════════════════════════════════════════════════════╣\n");
+            Connection conn = sqlconnector.connect();
+            if (conn != null) {
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                stmt.setString(1, regNo);
 
-        double totalPoints = 0;
-        int totalCredits = 0;
-        boolean hasData = false;
+                ResultSet rs = stmt.executeQuery();
 
-        while (rs.next()) {
-            hasData = true;
-            String code = rs.getString("course_code");
-            String title = rs.getString("course_title");
-            int credit = rs.getInt("credit");
-            String grade = rs.getString("grade");
-            double gpa = rs.getDouble("gpa");
-            int level = rs.getInt("level");
-            String semester = rs.getString("semester");
+                StringBuilder sb = new StringBuilder();
+                sb.append("╔══════════════════════════════════════════════════════════════════════╗\n");
+                sb.append(String.format("║   🎓  GPA RESULTS for: %-45s ║\n", regNo));
+                sb.append("╠══════════════════════════════════════════════════════════════════════╣\n");
+                sb.append(String.format("║ %-8s │ %-25s │ %-6s │ %-6s │ %-4s │ %-6s │ %-8s ║%n",
+                        "Code", "Title", "Credit", "Grade", "GP", "Level", "Semester"));
+                sb.append("╠══════════════════════════════════════════════════════════════════════╣\n");
 
-            sb.append(String.format("║ %-8s │ %-25s │ %-6d │ %-6s │ %-4.2f │ %-6d │ %-8s ║%n",
-                    code, title, credit, grade, gpa, level, semester));
+                double totalPoints = 0;
+                int totalCredits = 0;
+                boolean hasData = false;
 
-            totalCredits += credit;
-            totalPoints += gpa * credit;
+                while (rs.next()) {
+                    hasData = true;
+                    String code = rs.getString("course_code");
+                    String title = rs.getString("course_title");
+                    int credit = rs.getInt("credit");
+                    String grade = rs.getString("grade");
+                    double gpa = rs.getDouble("gpa");
+                    int level = rs.getInt("level");
+                    String semester = rs.getString("semester");
+
+                    sb.append(String.format("║ %-8s │ %-25s │ %-6d │ %-6s │ %-4.2f │ %-6d │ %-8s ║%n",
+                            code, title, credit, grade, gpa, level, semester));
+
+                    totalCredits += credit;
+                    totalPoints += gpa * credit;
+                }
+
+                sb.append("╠══════════════════════════════════════════════════════════════════════╣\n");
+
+                if (hasData) {
+                    double cgpa = totalPoints / totalCredits;
+                    sb.append(String.format("║ 🎯  CGPA: %-10.2f                                      %-18s ║%n", cgpa, ""));
+                } else {
+                    sb.append("║ ⚠ No results found for this registration number.                  ║\n");
+                }
+
+                sb.append("╚══════════════════════════════════════════════════════════════════════╝\n");
+                output.setText(sb.toString());
+            }
+
+        } catch (SQLException e) {
+            output.setText("❌ Error fetching results: " + e.getMessage());
         }
-
-        sb.append("╠══════════════════════════════════════════════════════════════════════╣\n");
-
-        if (hasData) {
-            double cgpa = totalPoints / totalCredits;
-            sb.append(String.format("║ 🎯  CGPA: %-10.2f                                      %-18s ║%n", cgpa, ""));
-        } else {
-            sb.append("║ ⚠ No results found for this registration number.                  ║\n");
-        }
-
-        sb.append("╚══════════════════════════════════════════════════════════════════════╝\n");
-        output.setText(sb.toString());
-        }
-
-    } catch (SQLException e) {
-        output.setText("❌ Error fetching results: " + e.getMessage());
     }
-}
-
 
     private String buttonStyle() {
         return "-fx-background-color: #12122a; -fx-text-fill: #00bfff; "
