@@ -1,6 +1,8 @@
 
 import java.sql.*;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * GPA Calculator Program with MySQL Database Integration
@@ -79,7 +81,11 @@ public class GPACalculator {
         semester = getValidSemester();
 
         student = new Student(reg_number, name, level, session, semester);
-        student.saveToDatabase();
+        try {
+            student.saveToDatabase();
+        } catch (Exception ex) {
+            Logger.getLogger(GPACalculator.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         System.out.println("\n Student profile saved successfully.");
 
@@ -109,7 +115,7 @@ public class GPACalculator {
      * level/semester or for all semesters grouped together.
      */
     private void showPreviousResult(String regNo) {
-        try (Connection conn = sqlconnector.connect()) {
+        try (Connection conn = sqlconnector.getConnection()) {
 
             // Step 1️⃣: Ask what the user wants to view
             System.out.println("\n📘 What would you like to view?");
@@ -356,7 +362,7 @@ public class GPACalculator {
     public void saveResultToDatabase(Course course) {
         String sql = "INSERT INTO result (reg_number, course_code, course_title, credit, grade, level, semester, gpa) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-        try (Connection conn = sqlconnector.connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = sqlconnector.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, reg_number);
             stmt.setString(2, course.getCourseCode());

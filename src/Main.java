@@ -1,8 +1,11 @@
-
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+/**
+ * Application entry point for
+ * School Result Management System
+ */
 public class Main extends Application {
 
     private static Stage mainStage;
@@ -10,21 +13,29 @@ public class Main extends Application {
     @Override
     public void start(Stage stage) {
         mainStage = stage;
-        homeScreen home = new homeScreen(stage);
-        Scene homeScene = new Scene(home.getLayout(), 500, 600);
+
+        HomeScreen home = new HomeScreen();
+        Scene homeScene = new Scene(home.getLayout(), 1600, 880);
 
         stage.setScene(homeScene);
-        stage.setTitle(" GPA Calculator");
+        stage.setTitle("School Result Management System");
         stage.show();
     }
 
-    // ✅ Static method to switch between screens
+    /**
+     * Centralized scene switcher
+     */
     public static void switchScene(Scene newScene, String title) {
         mainStage.setScene(newScene);
         mainStage.setTitle(title);
+    }
+
+    public static Stage getMainStage() {
+        return mainStage;
     }
 
     public static void main(String[] args) {
         launch(args);
     }
 }
+

@@ -2,56 +2,83 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class sqlconnector {
+/**
+ * Centralized MySQL database connector.
+ * Works without MySQL Workbench.
+ * Requires mysql-connector-j (8.4+ recommended).
+ */
+public final class sqlconnector {
 
-    // ✅ Database details
-    private static final String URL = "jdbc:mysql://localhost:3306/gpadb?autoReconnect=true&useSSL=false";
+    // ===================== DATABASE CONFIG =====================
+
+    private static final String URL =
+            "jdbc:mysql://localhost:3306/gpadb"
+          + "?useSSL=false"
+          + "&allowPublicKeyRetrieval=true"
+          + "&serverTimezone=UTC";
+
     private static final String USER = "root";
     private static final String PASSWORD = "Chiemezie@123";
 
-    // ✅ Keep a single connection reference
-    private static Connection conn = null;
+    // ===================== CONNECTION HOLDER =====================
 
-    // ✅ Method to get a valid connection (auto-reconnect)
-    public static Connection connect() {
+    private static Connection connection;
+
+    // Prevent instantiation
+    private sqlconnector() {}
+
+    // ===================== PUBLIC API =====================
+
+    /**
+     * Returns a valid MySQL connection.Creates a new one if none exists or if it was closed.
+     * @return
+     */
+    public static Connection getConnection() {
         try {
-            // ✅ Load MySQL JDBC Driver explicitly
+            // Ensure JDBC driver is available
             Class.forName("com.mysql.cj.jdbc.Driver");
 
-            // If connection doesn’t exist or is closed — create a new one
-            if (conn == null || conn.isClosed()) {
+            if (connection == null || connection.isClosed()) {
                 System.out.println("🔄 Connecting to MySQL database...");
-                conn = DriverManager.getConnection(URL, USER, PASSWORD);
-                System.out.println("✅ Connection established successfully!");
+                connection = DriverManager.getConnection(URL, USER, PASSWORD);
+                System.out.println("✅ Database connection established");
             }
+
+            return connection;
 
         } catch (ClassNotFoundException e) {
-            System.out.println("❌ JDBC Driver not found! Please add mysql-connector-j to your project.");
+            throw new IllegalStateException(
+                "MySQL JDBC Driver not found. Add mysql-connector-j to your project.",
+                e
+            );
+
         } catch (SQLException e) {
-            System.out.println("❌ Database connection failed: " + e.getMessage());
+            throw new IllegalStateException(
+                "Failed to connect to MySQL database. Check URL, credentials, and server status.",
+                e
+            );
         }
-
-        return conn;
     }
-    public static void main(String[] args) {
-    Connection test = sqlconnector.connect();
-    if (test != null) {
-        System.out.println("✅ Test connection successful!");
-    } else {
-        System.out.println("❌ Test connection failed!");
-    }
-}
 
-
-    // ✅ Optional method to manually close connection when done
+    /**
+     * Closes the database connection safely.
+     */
     public static void closeConnection() {
         try {
-            if (conn != null && !conn.isClosed()) {
-                conn.close();
-                System.out.println("🔒 Connection closed successfully.");
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+                System.out.println("🔒 Database connection closed");
             }
         } catch (SQLException e) {
-            System.out.println("⚠️ Error closing connection: " + e.getMessage());
+            e.printStackTrace();
         }
+    }
+
+    // ===================== QUICK TEST =====================
+
+    public static void main(String[] args) {
+        Connection conn = sqlconnector.getConnection();
+        System.out.println(conn != null ? "✅ TEST PASSED" : "❌ TEST FAILED");
+        sqlconnector.closeConnection();
     }
 }

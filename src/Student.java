@@ -1,57 +1,101 @@
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class Student {
-     String reg_number;
-     String name;
-     int level;
-     String session;
-    String semester; // 🆕 added field
 
-    // 🆕 Updated constructor to include semester
+    private String reg_number;
+    private String name;
+    private int level;
+    private String session;
+    private String semester; // Semester field
+    private String department; // 🆕 Optional field for school system
+
+    // ✅ Constructor
     public Student(String reg_number, String name, int level, String session, String semester) {
         this.reg_number = reg_number;
         this.name = name;
         this.level = level;
         this.session = session;
         this.semester = semester;
+        this.department = "General"; // default, can be updated later
     }
 
-    public void saveToDatabase() {
-    String sql = "INSERT INTO students (reg_number, name, level, session, semester) VALUES (?, ?, ?, ?, ?)";
+    // ✅ Constructor with department
+    public Student(String reg_number, String name, int level, String session, String semester, String department) {
+        this.reg_number = reg_number;
+        this.name = name;
+        this.level = level;
+        this.session = session;
+        this.semester = semester;
+        this.department = department;
+    }
 
-    // ✅ Try to get a connection from sqlconnector
-    try{
-    Connection conn = sqlconnector.connect();
+    // ✅ Save student record to database
+    public void saveToDatabase() throws Exception {
+        String sql = "INSERT INTO student (reg_number, name, level, session, semester, department) "
+                + "VALUES (?, ?, ?, ?, ?, ?)";
 
-    // ⚠️ Check if the connection failed
-    if (conn != null) {
-        //System.out.println("❌ Database connection is NULL. Could not save student.");
-        
+        try (Connection conn = sqlconnector.getConnection()) { // auto-close
+            if (conn == null) {
+                throw new SQLException("Database connection is null");
+            }
 
-        PreparedStatement stmt = conn.prepareStatement(sql);
-        // ✅ Assign field values to query
-        stmt.setString(1, reg_number);
-        stmt.setString(2, name);
-        stmt.setInt(3, level);
-        stmt.setString(4, session);
-        stmt.setString(5, semester);
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, reg_number);
+                stmt.setString(2, name);
+                stmt.setInt(3, level);
+                stmt.setString(4, session);
+                stmt.setString(5, semester);
+                stmt.setString(6, department);
 
-        stmt.executeUpdate();
-        System.out.println("✅ Student record saved successfully!");
-    } } catch (SQLException e) {
-        System.out.println("❌ Error saving student: " + e.getMessage());
+                stmt.executeUpdate();
+                System.out.println("✅ Student record saved successfully!");
+            }
+
+        } catch (SQLException e) {
+            throw new Exception("❌ Failed to save student: " + e.getMessage(), e);
+        }
+    }
+
+    // ✅ Display for debugging
+    public void display() {
+        System.out.println("Reg Number: " + reg_number);
+        System.out.println("Name: " + name);
+        System.out.println("Level: " + level);
+        System.out.println("Session: " + session);
+        System.out.println("Semester: " + semester);
+        System.out.println("Department: " + department);
+    }
+
+    // ✅ Getters
+    public String getRegNumber() {
+        return reg_number;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public String getSession() {
+        return session;
+    }
+
+    public String getSemester() {
+        return semester;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    // ✅ Optional setter for department
+    public void setDepartment(String department) {
+        this.department = department;
     }
 }
-
-
-    // getters
-    public String getRegNumber() { return reg_number; }
-    public String getName() { return name; }
-    public int getLevel() { return level; }
-    public String getSession() { return session; }
-    public String getSemester() { return semester; } // 🆕 getter for semester
-}
-
-
